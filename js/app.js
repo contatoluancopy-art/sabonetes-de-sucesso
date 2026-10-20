@@ -1202,9 +1202,9 @@
 
   // ---------- certificado: senha própria, o nome dela e o PDF na hora ----------
   // Mesmo modelo e mesmas medidas do certificado que o bot emite (bot-whatsapp/lib/certificado.js). A arte de fundo
-  // vem trancada com a senha do certificado (cert/certificado.json, ferramentas/certificado.mjs); as fontes são públicas.
+  // vem no cofre, trancada com a senha das aulas (montar.mjs); as fontes são públicas (cert/).
   let certLib = null;
-  const certEstado = { chave: null, salt: null, url: null };
+  const certEstado = { url: null };
   function carregarScript(src) {
     return new Promise((res, rej) => {
       const s = document.createElement('script');
@@ -1218,16 +1218,6 @@
         .catch((e) => { certLib = null; throw e; });
     }
     return certLib;
-  }
-  async function certInfo() {
-    const r = await fetch('cert/certificado.json', { cache: 'no-store' });
-    if (!r.ok) throw new Error('http ' + r.status);
-    return r.json();
-  }
-  async function certChaveGuardada(info) {
-    const g = guarda.ler('cert', null);
-    if (!g || g.s !== info.kdf.salt) return null;
-    try { return await crypto.subtle.importKey('raw', deB64(g.k), 'AES-GCM', false, ['decrypt']); } catch (e) { return null; }
   }
   const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
   async function montarCertificado(nome, arteJpg) {
@@ -1307,11 +1297,9 @@
     $('#cert-form').removeAttribute('data-erro');
     $('#cert-form').hidden = false;
     $('#cert-pronto').hidden = true;
-    let temChave = false;
-    try { const info = await certInfo(); certEstado.salt = info.kdf.salt; certEstado.info = info; certEstado.chave = await certChaveGuardada(info); temChave = Boolean(certEstado.chave); } catch (e) { /* confere de novo ao gerar */ }
-    $('#cert-campo-senha').hidden = temChave;
+    $('#cert-texto').textContent = 'Digite o seu nome do jeito que você quer que ele apareça. O certificado sai na hora, em PDF.';
     const fino = matchMedia('(hover: hover) and (pointer: fine)').matches;
-    abrirCamada('certificado', { foco: fino ? (temChave ? '#cert-nome' : '#cert-senha') : null });
+    abrirCamada('certificado', { foco: fino ? '#cert-nome' : null });
     carregarCertLib().catch(() => {});
   }
   function erroCert(txt, campo) {
@@ -1324,10 +1312,6 @@
   $('#cert-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const nome = $('#cert-nome').value.replace(/\s+/g, ' ').trim();
-    const campoSenha = $('#cert-senha');
-    const precisaSenha = !$('#cert-campo-senha').hidden;
-    const n = normal(campoSenha.value);
-    if (precisaSenha && !n) { erroCert('Digite a senha do certificado que a Ana te mandou.', campoSenha); return; }
     if (nome.length < 3) { erroCert('Digite o seu nome do jeito que ele vai aparecer no certificado.', $('#cert-nome')); return; }
     const gerar = $('#cert-gerar');
     gerar.disabled = true;
@@ -1335,19 +1319,8 @@
     $('#cert-erro').textContent = '';
     $('#cert-form').removeAttribute('data-erro');
     try {
-      const info = await certInfo();
-      let chave = certEstado.chave && certEstado.salt === info.kdf.salt ? certEstado.chave : null;
-      if (!chave) {
-        if (!n) { $('#cert-campo-senha').hidden = false; throw Object.assign(new Error('sem senha'), { name: 'SemSenha' }); }
-        const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(n), 'PBKDF2', false, ['deriveKey']);
-        chave = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: deB64(info.kdf.salt), iterations: info.kdf.iter, hash: 'SHA-256' },
-          base, { name: 'AES-GCM', length: 256 }, true, ['decrypt']);
-      }
-      const arte = await decifrar(await baixar(info.arte), chave);
-      if (!certEstado.chave || certEstado.chave !== chave) {
-        try { guarda.gravar('cert', { k: paraB64(await crypto.subtle.exportKey('raw', chave)), s: info.kdf.salt }); } catch (err) { /* chave guardada é só conforto */ }
-        certEstado.chave = chave; certEstado.salt = info.kdf.salt;
-      }
+      const segredo = await garantirSegredo();
+      const arte = await decifrar(await baixar(segredo.cert), estado.chave);
       await carregarCertLib();
       const bytes = await montarCertificado(nome, arte);
       if (certEstado.url) URL.revokeObjectURL(certEstado.url);
@@ -1361,9 +1334,7 @@
       baixarLink.focus({ preventScroll: true });
       await mostrarPrevia(bytes);
     } catch (err) {
-      if (err && err.name === 'SemSenha') erroCert('Digite a senha do certificado que a Ana te mandou.', campoSenha);
-      else if (err && err.name === 'OperationError') { guarda.apagar('cert'); certEstado.chave = null; $('#cert-campo-senha').hidden = false; erroCert('Essa senha do certificado não confere. Confira na mensagem da Ana e digite de novo.', campoSenha); }
-      else erroCert('Não consegui gerar agora. Veja se a internet está ligada e tente de novo.');
+      erroCert('Não consegui gerar agora. Veja se a internet está ligada e tente de novo.');
     } finally {
       gerar.disabled = false;
       gerar.classList.remove('carregando');

@@ -1,11 +1,11 @@
 // gerado por ferramentas/montar.mjs: não editar à mão
 window.DADOS = {
- "versao": "2026-10-20T22:11",
+ "versao": "2026-10-20T22:41",
  "kdf": {
   "salt": "4Bocy5UbRXuzUIf1HbZWMw==",
   "iter": 250000
  },
- "cofre": "conteudo/b4989e54544d.bin",
+ "cofre": "conteudo/257c8cb24e19.bin",
  "gratis": [
   {
    "id": "saboaria",
