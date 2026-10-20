@@ -129,7 +129,10 @@
       <div class="certificado-texto">
         <h2 id="t-certificado">Seu certificado</h2>
         <p class="so-bloqueado">Com o pagamento, você recebe o certificado de conclusão de 40 horas, com o seu nome, em PDF aqui no WhatsApp.</p>
-        <p class="so-liberado">O certificado de conclusão de 40 horas, com o seu nome, chega em PDF no seu WhatsApp. Ainda não recebeu? Manda pra Ana como você quer que o seu nome apareça nele.</p>
+        <p class="so-liberado">O certificado de conclusão de 40 horas sai na hora, com o seu nome, em PDF. A senha do certificado a Ana te manda no WhatsApp.</p>
+        <button class="botao botao-principal so-liberado cert-abrir" type="button" data-acao="certificado">
+          <svg class="ico" aria-hidden="true"><use href="#i-certificate"></use></svg><span>Gerar o meu certificado</span>
+        </button>
       </div>
     </section>
   </div>
@@ -192,6 +195,45 @@
       <p class="senha-erro" id="senha-erro" role="alert"></p>
       <p class="senha-dica" id="senha-dica">Pode digitar com ou sem espaço, maiúscula ou acento.</p>
     </form>
+  </section>
+</div>
+
+<!-- certificado: senha do certificado, o nome dela e o PDF na hora (mesmo modelo que o bot emite) -->
+<div class="camada" id="camada-certificado" hidden>
+  <div class="camada-fundo" data-fechar></div>
+  <section class="folha" role="dialog" aria-modal="true" aria-labelledby="cert-titulo">
+    <button class="icone-botao folha-fechar" type="button" data-fechar aria-label="Fechar">
+      <svg class="ico" aria-hidden="true"><use href="#i-x"></use></svg>
+    </button>
+    <h2 id="cert-titulo">Seu certificado</h2>
+    <p class="folha-texto" id="cert-texto">Digite o seu nome do jeito que você quer que ele apareça. O certificado sai na hora, em PDF.</p>
+    <form class="senha-form cert-form" id="cert-form" novalidate>
+      <div class="cert-campo" id="cert-campo-senha">
+        <label class="senha-rotulo" for="cert-senha">Senha do certificado</label>
+        <div class="senha-linha">
+          <input id="cert-senha" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next" aria-describedby="cert-senha-dica">
+        </div>
+        <p class="senha-dica" id="cert-senha-dica">A Ana te manda essa senha no WhatsApp. Pode digitar com ou sem espaço.</p>
+      </div>
+      <div class="cert-campo">
+        <label class="senha-rotulo" for="cert-nome">Seu nome completo</label>
+        <div class="senha-linha">
+          <input id="cert-nome" type="text" autocomplete="name" autocapitalize="words" spellcheck="false" maxlength="60" enterkeyhint="go">
+        </div>
+      </div>
+      <p class="senha-erro" id="cert-erro" role="alert"></p>
+      <button class="botao botao-principal cert-gerar" id="cert-gerar" type="submit">
+        <span class="botao-txt">Gerar o meu certificado</span>
+        <span class="giro" aria-hidden="true"></span>
+      </button>
+    </form>
+    <div class="cert-pronto" id="cert-pronto" hidden>
+      <div class="cert-previa"><canvas id="cert-previa"></canvas></div>
+      <a class="botao botao-principal" id="cert-baixar" href="#" download>
+        <svg class="ico" aria-hidden="true"><use href="#i-download-simple"></use></svg><span>Baixar o certificado</span>
+      </a>
+      <button class="link-texto" type="button" id="cert-corrigir">Corrigir o nome</button>
+    </div>
   </section>
 </div>
 

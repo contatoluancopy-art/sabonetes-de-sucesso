@@ -335,7 +335,7 @@
   }
 
   // ---------- camadas (folha, módulo, leitor) com o botão voltar do celular ----------
-  const camadas = { liberar: $('#camada-liberar'), modulo: $('#camada-modulo'), leitor: $('#camada-leitor') };
+  const camadas = { liberar: $('#camada-liberar'), modulo: $('#camada-modulo'), leitor: $('#camada-leitor'), certificado: $('#camada-certificado') };
   Object.values(camadas).forEach((c) => { const d = $('[role="dialog"]', c); if (d) d.tabIndex = -1; });
   const pilha = [];
   const aberta = (nome) => pilha.some((p) => p.nome === nome);
@@ -1198,6 +1198,185 @@
   const topo = $('#topo');
   const aoRolar = () => topo.classList.toggle('solido', window.scrollY > 24);
   window.addEventListener('scroll', aoRolar, { passive: true });
+
+
+  // ---------- certificado: senha própria, o nome dela e o PDF na hora ----------
+  // Mesmo modelo e mesmas medidas do certificado que o bot emite (bot-whatsapp/lib/certificado.js). A arte de fundo
+  // vem trancada com a senha do certificado (cert/certificado.json, ferramentas/certificado.mjs); as fontes são públicas.
+  let certLib = null;
+  const certEstado = { chave: null, salt: null, url: null };
+  function carregarScript(src) {
+    return new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = src; s.onload = res; s.onerror = () => rej(new Error(src));
+      document.head.append(s);
+    });
+  }
+  function carregarCertLib() {
+    if (!certLib) {
+      certLib = carregarScript('vendor/pdf-lib-1.17.1.min.js').then(() => carregarScript('vendor/fontkit-1.1.1.umd.min.js'))
+        .catch((e) => { certLib = null; throw e; });
+    }
+    return certLib;
+  }
+  async function certInfo() {
+    const r = await fetch('cert/certificado.json', { cache: 'no-store' });
+    if (!r.ok) throw new Error('http ' + r.status);
+    return r.json();
+  }
+  async function certChaveGuardada(info) {
+    const g = guarda.ler('cert', null);
+    if (!g || g.s !== info.kdf.salt) return null;
+    try { return await crypto.subtle.importKey('raw', deB64(g.k), 'AES-GCM', false, ['decrypt']); } catch (e) { return null; }
+  }
+  const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+  async function montarCertificado(nome, arteJpg) {
+    const { PDFDocument, rgb } = window.PDFLib;
+    const A4 = { w: 841.89, h: 595.28 };
+    const VERDE = rgb(0.106, 0.227, 0.184), OURO = rgb(0.69, 0.553, 0.247), CINZA = rgb(0.478, 0.455, 0.396), TINTA = rgb(0.235, 0.227, 0.2);
+    const OURO_CLARO = rgb(0.8, 0.71, 0.47), CREME = rgb(0.984, 0.973, 0.945);
+    const pdf = await PDFDocument.create();
+    pdf.registerFontkit(window.fontkit);
+    const fonteOpts = { subset: false, features: { liga: false, clig: false, calt: false, dlig: false, hlig: false } };
+    const fonte = async (f) => pdf.embedFont(await (await fetch('cert/' + f + '.ttf')).arrayBuffer(), fonteOpts);
+    const [cinzel, cormorant, cormorantIt, pinyon] = await Promise.all(['cinzel', 'cormorant', 'cormorant-italic', 'pinyon'].map(fonte));
+    const page = pdf.addPage([A4.w, A4.h]);
+    page.drawImage(await pdf.embedJpg(arteJpg), { x: 0, y: 0, width: A4.w, height: A4.h });
+    const centro = (texto, { f, t, cor, y, esp = 0 }) => {
+      let largura = f.widthOfTextAtSize(texto, t);
+      if (esp) largura += esp * (texto.length - 1);
+      const x = (A4.w - largura) / 2;
+      if (!esp) page.drawText(texto, { x, y, size: t, font: f, color: cor });
+      else { let cx = x; for (const ch of texto) { page.drawText(ch, { x: cx, y, size: t, font: f, color: cor }); cx += f.widthOfTextAtSize(ch, t) + esp; } }
+      return largura;
+    };
+    centro('SABONETES DE SUCESSO', { f: cinzel, t: 9.5, cor: CINZA, y: 468, esp: 3.4 });
+    centro('CERTIFICADO', { f: cinzel, t: 31, cor: VERDE, y: 424, esp: 2.6 });
+    centro('DE CONCLUSÃO', { f: cinzel, t: 10.5, cor: OURO, y: 402, esp: 3.2 });
+    page.drawLine({ start: { x: 352, y: 386 }, end: { x: 490, y: 386 }, thickness: 0.7, color: OURO_CLARO });
+    centro('Certificamos que', { f: cormorantIt, t: 13, cor: CINZA, y: 358 });
+    const tamNome = nome.length > 38 ? 22 : nome.length > 28 ? 26 : 30;
+    const larguraNome = centro(nome, { f: cormorantIt, t: tamNome, cor: VERDE, y: 322 });
+    const meio = A4.w / 2, linha = Math.max(larguraNome / 2 + 26, 165);
+    page.drawLine({ start: { x: meio - linha, y: 312 }, end: { x: meio + linha, y: 312 }, thickness: 0.6, color: OURO_CLARO });
+    centro('concluiu com êxito o curso Saboaria Artesanal — Sabonetes de Sucesso,', { f: cormorant, t: 13.5, cor: TINTA, y: 286 });
+    centro('com carga horária de 40 horas.', { f: cormorant, t: 13.5, cor: TINTA, y: 267 });
+    centro('Guia de Saboaria Artesanal · Sabonetes de Frutas · Sabonete de Cacho · Saboaria Terapêutica', { f: cormorant, t: 10, cor: CINZA, y: 238 });
+    centro('Sabonetes Líquidos · Materiais e Insumos · Produção para Venda', { f: cormorant, t: 10, cor: CINZA, y: 223 });
+    const hoje = new Date();
+    const data = `${hoje.getDate()} de ${MESES[hoje.getMonth()]} de ${hoje.getFullYear()}`;
+    const colEsq = 258, colDir = 584;
+    page.drawText(data, { x: colEsq - cormorant.widthOfTextAtSize(data, 12.5) / 2, y: 150, size: 12.5, font: cormorant, color: TINTA });
+    page.drawLine({ start: { x: colEsq - 78, y: 142 }, end: { x: colEsq + 78, y: 142 }, thickness: 0.6, color: OURO_CLARO });
+    const rotulo = (texto, cx0, esp) => {
+      let cx = cx0 - (cinzel.widthOfTextAtSize(texto, 7.5) + esp * (texto.length - 1)) / 2;
+      for (const ch of texto) { page.drawText(ch, { x: cx, y: 129, size: 7.5, font: cinzel, color: CINZA }); cx += cinzel.widthOfTextAtSize(ch, 7.5) + esp; }
+    };
+    rotulo('DATA DE CONCLUSÃO', colEsq, 1.1);
+    page.drawText('Ana Clari', { x: colDir - pinyon.widthOfTextAtSize('Ana Clari', 30) / 2, y: 152, size: 30, font: pinyon, color: VERDE });
+    page.drawLine({ start: { x: colDir - 88, y: 142 }, end: { x: colDir + 88, y: 142 }, thickness: 0.6, color: OURO_CLARO });
+    rotulo('SABOARIA ARTESANAL DE SUCESSO', colDir, 0.9);
+    const mx = (colEsq + colDir) / 2, my = 174;
+    const svg = (pontos) => pontos.map(([x, y], i) => `${i ? 'L' : 'M'} ${x.toFixed(2)} ${(A4.h - y).toFixed(2)}`).join(' ') + ' Z';
+    const fitaEsq = [[mx - 10, my - 14], [mx - 3, my - 14], [mx - 6, my - 40], [mx - 10.5, my - 34], [mx - 15, my - 38]];
+    for (const fita of [fitaEsq, fitaEsq.map(([x, y]) => [2 * mx - x, y])]) page.drawSvgPath(svg(fita), { x: 0, y: A4.h, color: OURO, borderColor: rgb(0.6, 0.47, 0.2), borderWidth: 0.4 });
+    for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2; page.drawCircle({ x: mx + Math.cos(a) * 17.5, y: my + Math.sin(a) * 17.5, size: 3.4, color: OURO }); }
+    page.drawCircle({ x: mx, y: my, size: 17, color: OURO });
+    page.drawCircle({ x: mx, y: my, size: 15, color: CREME });
+    page.drawCircle({ x: mx, y: my, size: 12, borderColor: OURO_CLARO, borderWidth: 0.6 });
+    const estrela = [];
+    for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + (i * Math.PI) / 5; const r = i % 2 === 0 ? 7 : 2.9; estrela.push([mx + Math.cos(a) * r, my + Math.sin(a) * r]); }
+    page.drawSvgPath(svg(estrela), { x: 0, y: A4.h, color: OURO });
+    return pdf.save();
+  }
+  async function mostrarPrevia(bytes) {
+    try {
+      const lib = await carregarPdfjs();
+      const doc = await lib.getDocument({ data: bytes.slice(0) }).promise;
+      const pg = await doc.getPage(1);
+      const cv = $('#cert-previa');
+      const largura = Math.min(cv.parentElement.clientWidth || 340, 640) * Math.min(2, window.devicePixelRatio || 1);
+      const vp = pg.getViewport({ scale: largura / pg.getViewport({ scale: 1 }).width });
+      cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
+      await pg.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
+    } catch (e) { /* sem prévia: o botão de baixar resolve */ }
+  }
+  async function abrirCertificado() {
+    if (aberta('certificado')) return;
+    $('#cert-erro').textContent = '';
+    $('#cert-form').removeAttribute('data-erro');
+    $('#cert-form').hidden = false;
+    $('#cert-pronto').hidden = true;
+    let temChave = false;
+    try { const info = await certInfo(); certEstado.salt = info.kdf.salt; certEstado.info = info; certEstado.chave = await certChaveGuardada(info); temChave = Boolean(certEstado.chave); } catch (e) { /* confere de novo ao gerar */ }
+    $('#cert-campo-senha').hidden = temChave;
+    const fino = matchMedia('(hover: hover) and (pointer: fine)').matches;
+    abrirCamada('certificado', { foco: fino ? (temChave ? '#cert-nome' : '#cert-senha') : null });
+    carregarCertLib().catch(() => {});
+  }
+  function erroCert(txt, campo) {
+    const form = $('#cert-form');
+    form.setAttribute('data-erro', '');
+    $('#cert-erro').textContent = txt;
+    if (campo) { campo.focus(); campo.select?.(); }
+    if (!quieto()) { form.classList.remove('tremendo'); void form.offsetWidth; form.classList.add('tremendo'); }
+  }
+  $('#cert-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const nome = $('#cert-nome').value.replace(/\s+/g, ' ').trim();
+    const campoSenha = $('#cert-senha');
+    const precisaSenha = !$('#cert-campo-senha').hidden;
+    const n = normal(campoSenha.value);
+    if (precisaSenha && !n) { erroCert('Digite a senha do certificado que a Ana te mandou.', campoSenha); return; }
+    if (nome.length < 3) { erroCert('Digite o seu nome do jeito que ele vai aparecer no certificado.', $('#cert-nome')); return; }
+    const gerar = $('#cert-gerar');
+    gerar.disabled = true;
+    gerar.classList.add('carregando');
+    $('#cert-erro').textContent = '';
+    $('#cert-form').removeAttribute('data-erro');
+    try {
+      const info = await certInfo();
+      let chave = certEstado.chave && certEstado.salt === info.kdf.salt ? certEstado.chave : null;
+      if (!chave) {
+        if (!n) { $('#cert-campo-senha').hidden = false; throw Object.assign(new Error('sem senha'), { name: 'SemSenha' }); }
+        const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(n), 'PBKDF2', false, ['deriveKey']);
+        chave = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: deB64(info.kdf.salt), iterations: info.kdf.iter, hash: 'SHA-256' },
+          base, { name: 'AES-GCM', length: 256 }, true, ['decrypt']);
+      }
+      const arte = await decifrar(await baixar(info.arte), chave);
+      if (!certEstado.chave || certEstado.chave !== chave) {
+        try { guarda.gravar('cert', { k: paraB64(await crypto.subtle.exportKey('raw', chave)), s: info.kdf.salt }); } catch (err) { /* chave guardada é só conforto */ }
+        certEstado.chave = chave; certEstado.salt = info.kdf.salt;
+      }
+      await carregarCertLib();
+      const bytes = await montarCertificado(nome, arte);
+      if (certEstado.url) URL.revokeObjectURL(certEstado.url);
+      certEstado.url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+      const baixarLink = $('#cert-baixar');
+      baixarLink.href = certEstado.url;
+      baixarLink.download = `Certificado - ${nome.replace(/[\\/:*?"<>|]/g, '')}.pdf`;
+      $('#cert-texto').textContent = 'Pronto! Confira o seu nome e baixe o seu certificado.';
+      $('#cert-form').hidden = true;
+      $('#cert-pronto').hidden = false;
+      baixarLink.focus({ preventScroll: true });
+      await mostrarPrevia(bytes);
+    } catch (err) {
+      if (err && err.name === 'SemSenha') erroCert('Digite a senha do certificado que a Ana te mandou.', campoSenha);
+      else if (err && err.name === 'OperationError') { guarda.apagar('cert'); certEstado.chave = null; $('#cert-campo-senha').hidden = false; erroCert('Essa senha do certificado não confere. Confira na mensagem da Ana e digite de novo.', campoSenha); }
+      else erroCert('Não consegui gerar agora. Veja se a internet está ligada e tente de novo.');
+    } finally {
+      gerar.disabled = false;
+      gerar.classList.remove('carregando');
+    }
+  });
+  $('#cert-corrigir').addEventListener('click', () => {
+    $('#cert-texto').textContent = 'Digite o seu nome do jeito que você quer que ele apareça. O certificado sai na hora, em PDF.';
+    $('#cert-pronto').hidden = true;
+    $('#cert-form').hidden = false;
+    $('#cert-nome').focus();
+    $('#cert-nome').select();
+  });
+  $('#certificado').addEventListener('click', (e) => { if (e.target.closest('[data-acao="certificado"]')) abrirCertificado(); });
 
   // ---------- início ----------
   function preencherPix() {

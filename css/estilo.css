@@ -746,3 +746,15 @@ html[data-liberado] .selo-aberto { color: var(--ameixa-clara); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
+
+/* certificado: folha com a senha do certificado e o nome; depois, a prévia e o botão de baixar */
+.cert-abrir { margin-top: 16px; }
+.cert-form { gap: 14px; }
+.cert-campo { display: grid; gap: 8px; }
+.cert-campo[hidden] { display: none; }
+.cert-gerar { min-height: 52px; width: 100%; justify-content: center; }
+.cert-pronto { display: grid; gap: 12px; justify-items: center; }
+.cert-pronto[hidden] { display: none; }
+.cert-previa { width: 100%; border-radius: 8px; overflow: hidden; background: var(--fundo-fundo); box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.7); aspect-ratio: 841.89 / 595.28; }
+.cert-previa canvas { display: block; width: 100%; height: 100%; }
+.cert-pronto .botao { width: 100%; justify-content: center; min-height: 52px; }
