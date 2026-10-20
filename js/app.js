@@ -73,6 +73,20 @@
     const bruta = await crypto.subtle.exportKey('raw', chave);
     guarda.gravar('chave', { k: paraB64(bruta), s: D.kdf.salt });
   }
+  // o GitHub Pages deixa o navegador guardar o js/dados.js por até 10 min: se a senha ou o conteúdo mudou nesse
+  // meio tempo, a página aberta aponta pra um cofre que já não existe. Antes de abrir o cofre, confere a versão
+  // atual (js/dados.json, sem cache) e passa a usar o sal e o cofre novos. Sem internet, segue com o que tem.
+  async function dadosAtuais() {
+    try {
+      const r = await fetch('js/dados.json', { cache: 'no-store' });
+      if (!r.ok) return;
+      const novo = await r.json();
+      if (novo.versao && novo.versao !== D.versao) {
+        D.versao = novo.versao; D.kdf = novo.kdf; D.cofre = novo.cofre;
+        estado.cofre = null;
+      }
+    } catch (e) { /* sem internet */ }
+  }
   async function chaveGuardada() {
     const g = guarda.ler('chave', null);
     if (!g || g.s !== D.kdf.salt) return null;
@@ -80,6 +94,7 @@
   }
   async function garantirSegredo() {
     if (estado.segredo) return estado.segredo;
+    await dadosAtuais();
     if (!estado.chave) estado.chave = await chaveGuardada();
     if (!estado.chave) throw new Error('sem chave');
     estado.segredo = await abrirCofre(estado.chave);
@@ -405,6 +420,7 @@
     $('#senha-erro').textContent = '';
     $('#senha-form').removeAttribute('data-erro');
     try {
+      await dadosAtuais();
       const chave = await derivarChave(n);
       const segredo = await abrirCofre(chave);
       estado.chave = chave;
@@ -1200,6 +1216,7 @@
     aoRolar();
     if (!estado.liberado) return;
     try {
+      await dadosAtuais();
       estado.chave = await chaveGuardada();
       if (!estado.chave) throw Object.assign(new Error('sem chave'), { name: 'OperationError' });
       estado.segredo = await abrirCofre(estado.chave);
