@@ -5,7 +5,7 @@
   if (!D) return;
 
   // Como pagar, mostrado na folha de liberar. Pra esconder a chave do site, troque por: const PAGAMENTO = null;
-  const PAGAMENTO = { valor: '19,90', chave: '63877231000106', tipo: 'CNPJ', nota: 'No banco aparece o nome Luan Araujo, marido da Ana.' };
+  const PAGAMENTO = { valor: '24,90', chave: '63877231000106', tipo: 'CNPJ', nota: 'No banco aparece o nome Luan Araujo, marido da Ana.' };
 
   const html = document.documentElement;
   const $ = (s, el = document) => el.querySelector(s);
