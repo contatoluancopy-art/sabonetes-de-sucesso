@@ -989,7 +989,6 @@
     L.info = info;
     $('#leitor-titulo').textContent = info.titulo;
     $('#leitor-pagina').textContent = '';
-    $('#leitor-baixar').hidden = true;
     areaPdf.innerHTML = '';
     if (!aberta('leitor')) abrirCamada('leitor', { aoFechar: fecharLeitor, foco: '[data-fechar]' });
     carregarDoc();
@@ -1024,10 +1023,7 @@
       L.ar = vp.width / vp.height;
       montarPaginas();
       estadoLeitor(null);
-      const baixa = $('#leitor-baixar');
-      baixa.href = L.blob || info.arq;
-      baixa.setAttribute('download', info.titulo + '.pdf');
-      baixa.hidden = false;
+      // (22/10) sem botão de baixar: a apostila é lida aqui dentro (pedido do Luan)
       const salva = lidas[L.id];
       if (salva > 1 && salva <= L.total) { irPara(salva); aviso(`Continuando da página ${salva}`); }
       areaPdf.focus({ preventScroll: true });
