@@ -335,7 +335,7 @@
   }
 
   // ---------- camadas (folha, módulo, leitor) com o botão voltar do celular ----------
-  const camadas = { liberar: $('#camada-liberar'), modulo: $('#camada-modulo'), leitor: $('#camada-leitor'), certificado: $('#camada-certificado') };
+  const camadas = { liberar: $('#camada-liberar'), modulo: $('#camada-modulo'), leitor: $('#camada-leitor'), certificado: $('#camada-certificado'), oferta: $('#camada-oferta') };
   Object.values(camadas).forEach((c) => { const d = $('[role="dialog"]', c); if (d) d.tabIndex = -1; });
   const pilha = [];
   const aberta = (nome) => pilha.some((p) => p.nome === nome);
@@ -1357,6 +1357,17 @@
     $('.pix-rotulo', caixa).textContent = `Chave ${PAGAMENTO.tipo}`;
     $('#pix-nome').textContent = PAGAMENTO.nota || '';
   }
+  // a oferta (mais de R$ 1.000 por 24,90) aparece uma vez por aparelho, na primeira abertura, só pra quem não liberou
+  function abrirOferta() {
+    if (estado.liberado || guarda.ler('oferta', 0)) return;
+    guarda.gravar('oferta', 1);
+    abrirCamada('oferta', { foco: '[data-acao="oferta-liberar"]' });
+  }
+  $('#camada-oferta').addEventListener('click', (e) => {
+    if (!e.target.closest('[data-acao="oferta-liberar"]')) return;
+    fecharTopo();
+    setTimeout(abrirLiberar, 380);
+  });
   async function iniciar() {
     preencherPix();
     montarModulos();
@@ -1364,6 +1375,7 @@
     ligarSetas();
     renderTudo();
     aoRolar();
+    setTimeout(abrirOferta, 900);
     if (!estado.liberado) return;
     try {
       await dadosAtuais();

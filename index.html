@@ -145,6 +145,30 @@
 
 <noscript><p class="sem-js">Pra ver o curso, abra este link no navegador do celular (Chrome ou Safari).</p></noscript>
 
+<!-- oferta: aparece uma vez, na primeira abertura, antes do pagamento -->
+<div class="camada" id="camada-oferta" hidden>
+  <div class="camada-fundo" data-fechar></div>
+  <section class="folha oferta" role="dialog" aria-modal="true" aria-labelledby="oferta-titulo">
+    <button class="icone-botao folha-fechar" type="button" data-fechar aria-label="Fechar">
+      <svg class="ico" aria-hidden="true"><use href="#i-x"></use></svg>
+    </button>
+    <p class="oferta-selo">Mais de R$ 1.000 em material</p>
+    <h2 id="oferta-titulo">por R$ 24,90, uma vez só</h2>
+    <ul class="oferta-conta">
+      <li><span>74 vídeo aulas, a R$ 10 cada</span><strong>R$ 740</strong></li>
+      <li><span>11 apostilas, a R$ 25 cada</span><strong>R$ 275</strong></li>
+      <li class="oferta-total"><span>Somando</span><strong>R$ 1.015</strong></li>
+    </ul>
+    <p class="oferta-texto">Dez reais é menos do que um sabonete de cacho vendido. Aqui você leva as 74 aulas, as 11 apostilas e o certificado de 40 horas por R$ 24,90, pagos uma vez. Comece pelas 3 apostilas grátis: elas já estão abertas.</p>
+    <div class="oferta-acoes">
+      <button class="botao botao-principal" type="button" data-acao="oferta-liberar">
+        <svg class="ico" aria-hidden="true"><use href="#i-lock-simple-open"></use></svg><span>Liberar tudo por R$ 24,90</span>
+      </button>
+      <button class="link-texto" type="button" data-fechar>Ver as apostilas grátis primeiro</button>
+    </div>
+  </section>
+</div>
+
 <!-- liberar: como pagar e onde digitar a senha -->
 <div class="camada" id="camada-liberar" hidden>
   <div class="camada-fundo" data-fechar></div>
@@ -153,7 +177,7 @@
       <svg class="ico" aria-hidden="true"><use href="#i-x"></use></svg>
     </button>
     <h2 id="liberar-titulo">Liberar as aulas e os bônus</h2>
-    <p class="folha-texto" id="liberar-texto">As 74 vídeo aulas, os 8 bônus e o seu certificado são liberados depois do pagamento único, a partir de R$ 24,90. Pra ter ideia: a R$ 10 por aula, só as 74 aulas dariam R$ 740; mais R$ 10 por bônus, R$ 820. Aqui é tudo por R$ 24,90, uma vez só.</p>
+    <p class="folha-texto" id="liberar-texto">As 74 vídeo aulas, os 8 bônus e o seu certificado são liberados depois do pagamento único, a partir de R$ 24,90.</p>
     <ol class="passos">
       <li>
         <span class="passo-n" aria-hidden="true">1</span>

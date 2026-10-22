@@ -758,3 +758,16 @@ html[data-liberado] .selo-aberto { color: var(--ameixa-clara); }
 .cert-previa { width: 100%; border-radius: 8px; overflow: hidden; background: var(--fundo-fundo); box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.7); aspect-ratio: 841.89 / 595.28; }
 .cert-previa canvas { display: block; width: 100%; height: 100%; }
 .cert-pronto .botao { width: 100%; justify-content: center; min-height: 52px; }
+
+/* oferta: a conta de mais de R$ 1.000 por 24,90, uma vez por aparelho */
+.folha.oferta { text-align: center; }
+.oferta-selo { display: inline-block; margin: 6px 0 10px; padding: 6px 14px; border-radius: 999px; background: rgba(217, 149, 203, 0.18); color: var(--ameixa-clara); font-size: 14px; font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase; }
+.folha.oferta h2 { font-size: 30px; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 18px; }
+.oferta-conta { list-style: none; margin: 0 0 16px; padding: 0; text-align: left; display: grid; gap: 6px; }
+.oferta-conta li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 8px 12px; border-radius: 10px; background: rgba(245, 240, 235, 0.06); font-size: 16px; color: var(--texto-2); }
+.oferta-conta li strong { color: var(--texto); font-variant-numeric: tabular-nums; }
+.oferta-conta .oferta-total { background: rgba(217, 149, 203, 0.16); color: var(--texto); font-weight: 700; }
+.oferta-conta .oferta-total strong { color: var(--ameixa-clara); font-size: 20px; }
+.oferta-texto { color: var(--texto-2); font-size: 16px; line-height: 1.5; text-wrap: pretty; margin-bottom: 18px; }
+.oferta-acoes { display: grid; gap: 12px; justify-items: center; }
+.oferta-acoes .botao { width: 100%; justify-content: center; min-height: 52px; }
