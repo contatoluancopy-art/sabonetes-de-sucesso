@@ -259,7 +259,7 @@
         : botao('principal', 'play-fill', 'Começar a primeira aula', 'primeira'))
         + botao('secundario', 'list-bullets', 'Ver os módulos', 'modulos');
     } else {
-      texto.textContent = 'Comece agora pelas 3 apostilas grátis. As aulas e os bônus são liberados depois do Pix.';
+      texto.textContent = 'Comece agora pelas 2 apostilas grátis. As aulas e os bônus são liberados depois do Pix.';
       acoes.innerHTML = botao('principal', 'book-open-text', 'Ler a apostila grátis', 'ler-gratis') + botao('secundario', 'lock-simple', 'Liberar as aulas', 'liberar');
     }
     if (animar && !quieto()) { acoes.classList.remove('trocando'); void acoes.offsetWidth; acoes.classList.add('trocando'); }
@@ -324,7 +324,7 @@
     if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); }
   }
   // ordem das fileiras (no HTML mesmo, pra ordem do Tab bater com a tela):
-  // visitante = apostilas grátis, os 8 bônus logo em seguida (o que o Pix libera aparece cedo) e depois os módulos;
+  // visitante = apostilas grátis, os 9 bônus logo em seguida (o que o Pix libera aparece cedo) e depois os módulos;
   // aluna que já liberou = continuar, módulos, apostilas, bônus
   function ordenarFileiras() {
     const f = $('#fileiras');
@@ -482,7 +482,7 @@
       <div class="pagina-corpo">
         <h2 class="pagina-titulo" id="modulo-titulo">${esc(m.titulo)}</h2>
         <p class="pagina-meta">${linhaMeta([m.rotulo, `${m.aulas} aulas`, tempo(m.minutos)])}</p>
-        <p class="pagina-texto">As ${m.aulas} aulas deste módulo são liberadas depois do Pix, junto com todas as outras e os 8 bônus.</p>
+        <p class="pagina-texto">As ${m.aulas} aulas deste módulo são liberadas depois do Pix, junto com todas as outras e os 9 bônus.</p>
         <div class="pagina-acoes">
           ${botao('principal', 'lock-simple', 'Liberar as aulas', 'liberar')}
           ${apostila ? `<button class="botao botao-secundario" type="button" data-acao="pdf" data-id="${esc(apostila.id)}">${ico('book-open-text')}<span>Ler a apostila grátis</span></button>` : ''}

@@ -1,20 +1,12 @@
 // gerado por ferramentas/montar.mjs: não editar à mão
 window.DADOS = {
- "versao": "2026-10-20T22:41",
+ "versao": "2026-10-23T01:43",
  "kdf": {
   "salt": "4Bocy5UbRXuzUIf1HbZWMw==",
   "iter": 250000
  },
- "cofre": "conteudo/257c8cb24e19.bin",
+ "cofre": "conteudo/7baca855f72f.bin",
  "gratis": [
-  {
-   "id": "saboaria",
-   "titulo": "Saboaria Artesanal 2.0",
-   "sub": "O curso completo",
-   "paginas": 126,
-   "arq": "apostilas/saboaria-artesanal-2.0.pdf",
-   "capa": "img/capas/saboaria.webp"
-  },
   {
    "id": "cacho",
    "titulo": "Sabonete de Cacho 2.0",
@@ -274,6 +266,12 @@ window.DADOS = {
   }
  ],
  "bonus": [
+  {
+   "id": "saboaria",
+   "titulo": "Saboaria Artesanal 2.0",
+   "paginas": 126,
+   "capa": "img/capas/saboaria.webp"
+  },
   {
    "id": "cremes",
    "titulo": "Cremes Hidratantes",
